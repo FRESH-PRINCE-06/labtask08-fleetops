@@ -1,0 +1,59 @@
+NOTE: identity hash values (large numbers) differ on every run; everything else is identical.
+
+==============================================================
+  FleetOps - Fleet & Vehicle Management : Verification Driver
+==============================================================
+
+--- TEST CASE A: Aggregation Lifecycle Independence ---
+Created independently : Driver{id=D-001, name=Ali Raza, license=LIC-ABT-1001}
+                        Driver{id=D-002, name=Sara Khan, license=LIC-ABT-1002}
+                        Vehicle{vin=VIN-1001, model=Toyota Hilux, engine=Engine{number=ENG-2GD-001, displacementCC=2400, fuelType=Diesel}, maintenanceRecords=0, driver=Ali Raza}
+                        Vehicle{vin=VIN-1002, model=Suzuki Bolan, engine=Engine{number=ENG-F8B-002, displacementCC=800, fuelType=Petrol}, maintenanceRecords=0, driver=Sara Khan}
+Depot created         : FleetDepot{id=DEP-01, location=Abbottabad Central Depot, vehicles=2}
+  [PASS] A1 depot holds both vehicles after assignVehicle()
+  [PASS] A2 depot stores the SAME references (aggregation, not copies)
+Identity hash BEFORE  : vehicle1=1528902577, vehicle2=1927950199
+depot = null  (depot reference nullified)
+Vehicle 1 after close : Vehicle{vin=VIN-1001, model=Toyota Hilux, engine=Engine{number=ENG-2GD-001, displacementCC=2400, fuelType=Diesel}, maintenanceRecords=0, driver=Ali Raza}
+Vehicle 2 after close : Vehicle{vin=VIN-1002, model=Suzuki Bolan, engine=Engine{number=ENG-F8B-002, displacementCC=800, fuelType=Petrol}, maintenanceRecords=0, driver=Sara Khan}
+Driver 1 after close  : Driver{id=D-001, name=Ali Raza, license=LIC-ABT-1001}
+Driver 2 after close  : Driver{id=D-002, name=Sara Khan, license=LIC-ABT-1002}
+Identity hash AFTER   : vehicle1=1528902577, vehicle2=1927950199
+  [PASS] A3 vehicle1 still retains its state (VIN-1001, Toyota Hilux)
+  [PASS] A4 vehicle2 still retains its state (VIN-1002, Suzuki Bolan)
+  [PASS] A5 same heap objects after depot = null (identity hash unchanged)
+  [PASS] A6 vehicles still reference their drivers
+  [PASS] A7 drivers still retain their state
+  [PASS] A8 vehicle engines are still fully accessible
+Reassigned to         : FleetDepot{id=DEP-02, location=Havelian Satellite Depot, vehicles=2}
+  [PASS] A9 surviving vehicles can be reassigned to another depot
+Driver leaves fleet   : Driver{id=D-001, name=Ali Raza, license=LIC-ABT-1001}
+Vehicle 1 afterwards  : Vehicle{vin=VIN-1001, model=Toyota Hilux, engine=Engine{number=ENG-2GD-001, displacementCC=2400, fuelType=Diesel}, maintenanceRecords=0, driver=none}
+  [PASS] A10 vehicle remains intact after its driver leaves
+  [PASS] A11 released driver still exists independently
+
+--- TEST CASE B: Composition Lifetime Binding & Encapsulation ---
+Created               : Vehicle{vin=VIN-2001, model=Honda Civic, engine=Engine{number=ENG-L15B-777, displacementCC=1500, fuelType=Petrol}, maintenanceRecords=0, driver=none}
+  [PASS] B1 no public Vehicle constructor accepts an external Engine
+leakedEngine          : Engine{number=ENG-L15B-777, displacementCC=1500, fuelType=Petrol}  (identity hash 135721597)
+getEngine() 2nd call  : Engine{number=ENG-L15B-777, displacementCC=1500, fuelType=Petrol}  (identity hash 455659002)
+  [PASS] B2 getEngine() never returns the same object twice (always a copy)
+  [PASS] B3 the copy starts with the same state as the internal engine
+leakedEngine mutated  : Engine{number=TAMPERED-000, displacementCC=9999, fuelType=Rocket Fuel}
+Vehicle's real engine : Engine{number=ENG-L15B-777, displacementCC=1500, fuelType=Petrol}
+  [PASS] B4 internal engine number unchanged
+  [PASS] B5 internal displacement unchanged
+  [PASS] B6 internal fuel type unchanged
+  [PASS] B7 defensive copying is active (leaked copy differs from internal state)
+History fetched       : [MaintenanceLog{id=LOG-001, description=Engine oil and filter change, cost=45.50}, MaintenanceLog{id=LOG-002, description=Front brake pad replacement, cost=120.00}]
+  [PASS] B8 history contains the two records added through the vehicle
+After clear()/mutate  : retrieved list size = 0
+Vehicle's real history: [MaintenanceLog{id=LOG-001, description=Engine oil and filter change, cost=45.50}, MaintenanceLog{id=LOG-002, description=Front brake pad replacement, cost=120.00}]
+  [PASS] B9 clearing the retrieved list did not clear the internal history
+  [PASS] B10 mutating a retrieved entry did not alter the internal entry
+  [PASS] B11 the injected entry never reached the internal history
+  [PASS] B12 two history requests return independent list objects
+
+==============================================================
+  SUMMARY: 23 passed, 0 failed
+==============================================================

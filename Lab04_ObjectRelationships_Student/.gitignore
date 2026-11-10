@@ -1,0 +1,16 @@
+# Maven build output
+target/
+
+# NetBeans caches and private settings
+.nb-cache/
+nbproject/private/
+build/
+dist/
+nbbuild/
+nbdist/
+
+# OS / IDE noise
+.DS_Store
+Thumbs.db
+*.class
+*.log
